@@ -2,12 +2,14 @@ package com.brashmonkey.spriter;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.XmlReader;
+import com.badlogic.gdx.utils.XmlReader.*;
 import com.brashmonkey.spriter.Entity.*;
 import com.brashmonkey.spriter.Mainline.Key.*;
-import com.brashmonkey.spriter.XmlReader.*;
+
 
 /**
  * This class parses a SCML file and creates a {@link Data} instance.
@@ -43,11 +45,11 @@ public class SCMLReader {
 	 */
 	protected Data load(String xml){
 		XmlReader reader = new XmlReader();
-		Element root = reader.parse(xml);
-		ArrayList<Element> folders = root.getChildrenByName("folder");
-		ArrayList<Element> entities = root.getChildrenByName("entity");
+		XmlReader.Element root = reader.parse(xml);
+		Array<Element> folders = root.getChildrenByName("folder");
+		Array<Element> entities = root.getChildrenByName("entity");
 		data = new Data(root.get("scml_version"), root.get("generator"),root.get("generator_version"),
-				folders.size(),	entities.size());
+				folders.size,	entities.size);
 		loadFolders(folders);
 		loadEntities(entities);
 		return data;
@@ -62,10 +64,10 @@ public class SCMLReader {
 		XmlReader reader = new XmlReader();
 		try {
 			Element root = reader.parse(stream);
-			ArrayList<Element> folders = root.getChildrenByName("folder");
-			ArrayList<Element> entities = root.getChildrenByName("entity");
+			Array<Element> folders = root.getChildrenByName("folder");
+			Array<Element> entities = root.getChildrenByName("entity");
 			data = new Data(root.get("scml_version"), root.get("generator"),root.get("generator_version"),
-					folders.size(),	entities.size());
+					folders.size,	entities.size);
 			loadFolders(folders);
 			loadEntities(entities);
 		} catch (IOException e) {
@@ -78,11 +80,11 @@ public class SCMLReader {
 	 * Iterates through the given folders and adds them to the current {@link Data} object.
 	 * @param folders a list of folders to load
 	 */
-	protected void loadFolders(ArrayList<Element> folders){
-		for(int i = 0; i < folders.size(); i++){
+	protected void loadFolders(Array<Element> folders){
+		for(int i = 0; i < folders.size; i++){
 			Element repo = folders.get(i);
-			ArrayList<Element> files = repo.getChildrenByName("file");
-			Folder folder = new Folder(repo.getInt("id"), repo.get("name", "no_name_"+i), files.size());
+			Array<Element> files = repo.getChildrenByName("file");
+			Folder folder = new Folder(repo.getInt("id"), repo.get("name", "no_name_"+i), files.size);
 			loadFiles(files, folder);
 			data.addFolder(folder);
 		}
@@ -93,8 +95,8 @@ public class SCMLReader {
 	 * @param files a list of files to load
 	 * @param folder the folder containing the files
 	 */
-	protected void loadFiles(ArrayList<Element> files, Folder folder){
-		for(int j = 0; j < files.size(); j++){
+	protected void loadFiles(Array<Element> files, Folder folder){
+		for(int j = 0; j < files.size; j++){
 			Element f = files.get(j);
 			File file = new File(f.getInt("id"), f.get("name"),
 					new Dimension(f.getInt("width", 0), f.getInt("height", 0)),
@@ -108,14 +110,14 @@ public class SCMLReader {
 	 * Iterates through the given entities and adds them to the current {@link Data} object.
 	 * @param entities a list of entities to load
 	 */
-	protected void loadEntities(ArrayList<Element> entities){
-		for(int i = 0; i < entities.size(); i++){
+	protected void loadEntities(Array<Element> entities){
+		for(int i = 0; i < entities.size; i++){
 			Element e = entities.get(i);
-			ArrayList<Element> infos = e.getChildrenByName("obj_info");
-			ArrayList<Element> charMaps = e.getChildrenByName("character_map");
-			ArrayList<Element> animations = e.getChildrenByName("animation");
+			Array<Element> infos = e.getChildrenByName("obj_info");
+			Array<Element> charMaps = e.getChildrenByName("character_map");
+			Array<Element> animations = e.getChildrenByName("animation");
 			Entity entity = new Entity(e.getInt("id"), e.get("name"),
-					animations.size(), charMaps.size(), infos.size());
+					animations.size, charMaps.size, infos.size);
 			data.addEntity(entity);
 			loadObjectInfos(infos, entity);
 			loadCharacterMaps(charMaps, entity);
@@ -128,8 +130,8 @@ public class SCMLReader {
 	 * @param infos a list of infos to load
 	 * @param entity the entity containing the infos
 	 */
-	protected void loadObjectInfos(ArrayList<Element> infos, Entity entity){
-		for(int i = 0; i< infos.size(); i++){
+	protected void loadObjectInfos(Array<Element> infos, Entity entity){
+		for(int i = 0; i< infos.size; i++){
 			Element info = infos.get(i);
 			Entity.ObjectInfo objInfo = new Entity.ObjectInfo(info.get("name","info"+i),
 									Entity.ObjectType.getObjectInfoFor(info.get("type","")),
@@ -137,7 +139,7 @@ public class SCMLReader {
 			entity.addInfo(objInfo);
 			Element frames = info.getChildByName("frames");
 			if(frames == null) continue;
-			ArrayList<Element> frameIndices = frames.getChildrenByName("i");
+			Array<Element> frameIndices = frames.getChildrenByName("i");
 			for(Element index: frameIndices){
 				int folder = index.getInt("folder", 0);
 				int file =  index.getInt("file", 0);
@@ -151,12 +153,12 @@ public class SCMLReader {
 	 * @param maps a list of character maps to load
 	 * @param entity the entity containing the character maps
 	 */
-	protected void loadCharacterMaps(ArrayList<Element> maps, Entity entity){
-		for(int i = 0; i< maps.size(); i++){
+	protected void loadCharacterMaps(Array<Element> maps, Entity entity){
+		for(int i = 0; i< maps.size; i++){
 			Element map = maps.get(i);
 			Entity.CharacterMap charMap = new Entity.CharacterMap(map.getInt("id"), map.getAttribute("name", "charMap"+i));
 			entity.addCharacterMap(charMap);
-			ArrayList<Element> mappings = map.getChildrenByName("map");
+			Array<Element> mappings = map.getChildrenByName("map");
 			for(Element mapping: mappings){
 				int folder = mapping.getInt("folder");
 				int file =  mapping.getInt("file");
@@ -171,15 +173,15 @@ public class SCMLReader {
 	 * @param animations a list of animations to load
 	 * @param entity the entity containing the animations maps
 	 */
-	protected void loadAnimations(ArrayList<Element> animations, Entity entity){
-		for(int i = 0; i < animations.size(); i++){
+	protected void loadAnimations(Array<Element> animations, Entity entity){
+		for(int i = 0; i < animations.size; i++){
 			Element a = animations.get(i);
-			ArrayList<Element> timelines = a.getChildrenByName("timeline");
+			Array<Element> timelines = a.getChildrenByName("timeline");
 			Element mainline = a.getChildByName("mainline");
-			ArrayList<Element> mainlineKeys = mainline.getChildrenByName("key");
-			Animation animation = new Animation(new Mainline(mainlineKeys.size()),
+			Array<Element> mainlineKeys = mainline.getChildrenByName("key");
+			Animation animation = new Animation(new Mainline(mainlineKeys.size),
 									  a.getInt("id"), a.get("name"), a.getInt("length"), 
-									  a.getBoolean("looping", true),timelines.size());
+									  a.getBoolean("looping", true),timelines.size);
 			entity.addAnimation(animation);
 			loadMainlineKeys(mainlineKeys, animation.mainline);
 			loadTimelines(timelines, animation, entity);
@@ -192,16 +194,16 @@ public class SCMLReader {
 	 * @param keys a list of mainline keys
 	 * @param main the mainline
 	 */
-	protected void loadMainlineKeys(ArrayList<Element> keys, Mainline main){
+	protected void loadMainlineKeys(Array<Element> keys, Mainline main){
 		for(int i = 0; i < main.keys.length; i++){
 			Element k = keys.get(i);
-			ArrayList<Element> objectRefs = k.getChildrenByName("object_ref");
-			ArrayList<Element> boneRefs = k.getChildrenByName("bone_ref");
+			Array<Element> objectRefs = k.getChildrenByName("object_ref");
+			Array<Element> boneRefs = k.getChildrenByName("bone_ref");
 			Curve curve = new Curve();
 			curve.setType(Curve.getType(k.get("curve_type","linear")));
 			curve.constraints.set(k.getFloat("c1", 0f),k.getFloat("c2", 0f),k.getFloat("c3", 0f),k.getFloat("c4", 0f));
 			Mainline.Key key = new Mainline.Key(k.getInt("id"), k.getInt("time", 0), curve,
-					boneRefs.size(), objectRefs.size());
+					boneRefs.size, objectRefs.size);
 			main.addKey(key);
 			loadRefs(objectRefs, boneRefs, key);
 		}
@@ -213,7 +215,7 @@ public class SCMLReader {
 	 * @param boneRefs a list if bone references
 	 * @param key the mainline key
 	 */
-	protected void loadRefs(ArrayList<Element> objectRefs, ArrayList<Element> boneRefs, Mainline.Key key){
+	protected void loadRefs(Array<Element> objectRefs, Array<Element> boneRefs, Mainline.Key key){
 		for(Element e: boneRefs){
 			BoneRef boneRef = new BoneRef(e.getInt("id"),e.getInt("timeline"),
 							e.getInt("key"), key.getBoneRef(e.getInt("parent", -1)));
@@ -234,15 +236,15 @@ public class SCMLReader {
 	 * @param animation the animation containing the timelines
 	 * @param entity entity for assigning the timeline an object info
 	 */
-	protected void loadTimelines(ArrayList<Element> timelines, Animation animation, Entity entity){
-		for(int i = 0; i< timelines.size(); i++){
+	protected void loadTimelines(Array<Element> timelines, Animation animation, Entity entity){
+		for(int i = 0; i< timelines.size; i++){
 			Element t = timelines.get(i);
-			ArrayList<Element> keys = timelines.get(i).getChildrenByName("key");
+			Array<Element> keys = timelines.get(i).getChildrenByName("key");
 			String name = t.get("name");
 			ObjectType type = ObjectType.getObjectInfoFor(t.get("object_type", "sprite"));
 			ObjectInfo info = entity.getInfo(name);
 			if(info == null) info = new ObjectInfo(name, type, new Dimension(0,0));
-			Timeline timeline = new Timeline(t.getInt("id"), name, info, keys.size());
+			Timeline timeline = new Timeline(t.getInt("id"), name, info, keys.size);
 			animation.addTimeline(timeline);
 			loadTimelineKeys(keys, timeline);
 		}
@@ -253,8 +255,8 @@ public class SCMLReader {
 	 * @param keys a list if timeline keys
 	 * @param timeline the timeline containing the keys
 	 */
-	protected void loadTimelineKeys(ArrayList<Element> keys, Timeline timeline){
-		for(int i = 0; i< keys.size(); i++){
+	protected void loadTimelineKeys(Array<Element> keys, Timeline timeline){
+		for(int i = 0; i< keys.size; i++){
 			Element k = keys.get(i);
 			Curve curve = new Curve();
 			curve.setType(Curve.getType(k.get("curve_type", "linear")));
